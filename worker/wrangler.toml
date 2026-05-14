@@ -2,9 +2,10 @@ name = "smart-gateway"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
 
-# ─── Environment variables ──────────────────────────────────────────────────
-# Set these with: wrangler secret put ANTHROPIC_API_KEY
-# The BACKEND_URL points to your service via Cloudflare Tunnel
+# --- AI binding (Workers AI - no API key needed) ---
+[ai]
+binding = "AI"
 
+# --- Environment variables ---
 [vars]
-BACKEND_URL = "http://localhost:8080"  # ← Change to your tunnel hostname
+BACKEND_URL = "http://localhost:8080"

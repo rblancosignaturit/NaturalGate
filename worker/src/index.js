@@ -22,34 +22,23 @@ async function getApiSpec(backendUrl) {
   }
 }
 
-// ─── Claude integration ─────────────────────────────────────────────────────
+// ─── Workers AI integration (binding nativo, sin API key) ───────────────────
 
-async function askClaude(apiKey, prompt, systemPrompt) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: "user", content: prompt }],
-    }),
+const AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+
+async function askClaude(ai, prompt, systemPrompt) {
+  const response = await ai.run(AI_MODEL, {
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: prompt },
+    ],
   });
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Claude API error (${response.status}): ${err}`);
+  if (!response || !response.response) {
+    throw new Error("Workers AI returned an empty response");
   }
 
-  const data = await response.json();
-  return data.content
-    .filter((block) => block.type === "text")
-    .map((block) => block.text)
-    .join("\n");
+  return response.response;
 }
 
 // ─── Natural language → API call translation ────────────────────────────────
@@ -180,7 +169,7 @@ export default {
         }
 
         // 2. Translate natural language → API call
-        const translation = await translateQuery(env.ANTHROPIC_API_KEY, query, spec);
+        const translation = await translateQuery(env.AI, query, spec);
 
         if (translation.error) {
           return Response.json(
@@ -222,7 +211,7 @@ export default {
         // 5. Optionally format with Claude
         let summary = null;
         if (explain) {
-          summary = await formatResponse(env.ANTHROPIC_API_KEY, query, data, explain);
+          summary = await formatResponse(env.AI, query, data, explain);
         }
 
         // 6. Build response
