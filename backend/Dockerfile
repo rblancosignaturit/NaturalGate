@@ -9,6 +9,6 @@ RUN poetry config virtualenvs.create false && poetry install --only main --no-ro
 
 COPY src/ ./src/
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/src
 
 CMD ["uvicorn", "natural_gate.main:app", "--host", "0.0.0.0", "--port", "8080"]

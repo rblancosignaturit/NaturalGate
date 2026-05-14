@@ -14,7 +14,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "54322:5432"
+      - "5433:5432"
 
   api:
     build:
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:54322/natural_gate
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/natural_gate
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
       DEBUG: "false"
       HOST: "0.0.0.0"
