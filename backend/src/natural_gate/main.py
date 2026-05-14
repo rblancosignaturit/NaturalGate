@@ -1,6 +1,9 @@
 """Natural Gate Backend — FastAPI entry point."""
 
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from natural_gate.domains.cars.api import router as cars_router
 from natural_gate.domains.reservations.api import router as reservations_router
@@ -20,6 +23,9 @@ app.include_router(reservations_router.router)
 app.include_router(payments_router.router)
 app.include_router(stats_router.router)
 
+STATIC_DIR = Path(__file__).parent / "presentation" / "static"
+app.mount("/ui", StaticFiles(directory=STATIC_DIR, html=True), name="ui")
+
 
 @app.get("/")
 def root() -> dict:
@@ -29,6 +35,7 @@ def root() -> dict:
         "version": "1.0.0",
         "docs": "/docs",
         "redoc": "/redoc",
+        "ui": "/ui",
         "endpoints": ["/api/cars", "/api/reservations", "/api/payments", "/api/stats"],
     }
 

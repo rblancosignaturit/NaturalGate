@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoReserva — Alquiler de Coches</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2236;
+            --bg-card-hover: #1f2a42;
+            --bg-input: #0f1629;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.25);
+            --accent-soft: rgba(59, 130, 246, 0.08);
+            --accent-warm: #f59e0b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(148, 163, 184, 0.08);
+            --border-accent: rgba(59, 130, 246, 0.3);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Background texture ─────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 0%, rgba(59,130,246,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245,158,11,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Header ─────────────────────────────────────── */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .logo span { color: var(--accent); }
+
+        nav { display: flex; gap: 4px; }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        nav button:hover { color: var(--text-primary); background: var(--accent-soft); }
+        nav button.active {
+            color: var(--accent);
+            background: rgba(59,130,246,0.12);
+        }
+
+        .nav-icon { margin-right: 6px; font-size: 1rem; }
+
+        /* ── Main ───────────────────────────────────────── */
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section { display: none; animation: fadeUp 0.4s ease; }
+        .section.active { display: block; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Section Header ─────────────────────────────── */
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        /* ── Filters ────────────────────────────────────── */
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .filter-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        select, input[type="text"], input[type="email"],
+        input[type="tel"], input[type="date"], input[type="number"] {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── Car Grid ───────────────────────────────────── */
+        .car-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .car-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .car-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(59,130,246,0.1);
+        }
+
+        .car-card-visual {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .car-card-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(245,158,11,0.05));
+        }
+
+        .car-card-body { padding: 1.25rem; }
+
+        .car-card-body h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .car-card-body .car-year {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .car-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .tag {
+            background: var(--accent-soft);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+
+        .car-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .price small {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        /* ── Buttons ────────────────────────────────────── */
+        .btn {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn-danger {
+            background: rgba(239,68,68,0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+        .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
+
+        /* ── Modal ──────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-width: 640px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+
+        .detail-row {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            min-width: 120px;
+        }
+
+        .detail-value { font-size: 0.9rem; }
+
+        .equip-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .equip-item {
+            background: var(--accent-soft);
+            border: 1px solid rgba(59,130,246,0.15);
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── Booking Form ───────────────────────────────── */
+        .booking-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+        }
+
+        .form-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .error-text {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        /* ── Summary Card ───────────────────────────────── */
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius);
+            padding: 2rem;
+            position: sticky;
+            top: 100px;
+        }
+
+        .summary-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .summary-total .price { font-size: 1.4rem; }
+
+        /* ── Search ──────────────────────────────────────── */
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 2rem;
+            max-width: 560px;
+        }
+
+        .search-bar input { flex: 1; }
+
+        /* ── Reservation Cards ──────────────────────────── */
+        .res-list { display: flex; flex-direction: column; gap: 1rem; }
+
+        .res-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+
+        .res-card:hover { border-color: var(--border-accent); }
+
+        .res-code {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            background: var(--accent-soft);
+            padding: 3px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .res-car-name { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+        .res-dates { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 8px; }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 4px 12px;
+            border-radius: 99px;
+            display: inline-block;
+        }
+
+        .status-confirmada { background: rgba(16,185,129,0.12); color: var(--success); }
+        .status-en_curso { background: rgba(59,130,246,0.12); color: var(--accent); }
+        .status-completada { background: rgba(148,163,184,0.12); color: var(--text-muted); }
+        .status-cancelada { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+        .res-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: right;
+        }
+
+        /* ── Toast ──────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 300;
+            transform: translateY(120%);
+            transition: transform 0.3s ease;
+        }
+        .toast.show { transform: translateY(0); }
+        .toast.success { background: var(--success); color: #fff; }
+        .toast.error { background: var(--danger); color: #fff; }
+
+        /* ── Empty state ────────────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        /* ── Responsive ─────────────────────────────────── */
+        @media (max-width: 768px) {
+            .booking-container { grid-template-columns: 1fr; }
+            .header-inner { flex-direction: column; height: auto; padding: 1rem 0; gap: 0.75rem; }
+            nav { overflow-x: auto; width: 100%; justify-content: center; }
+            .car-grid { grid-template-columns: 1fr; }
+            .section-header h1 { font-size: 1.6rem; }
+            main { padding: 1rem; }
+            .res-card { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────── -->
+<header>
+    <div class="header-inner">
+        <div class="logo">Auto<span>Reserva</span></div>
+        <nav>
+            <button class="active" onclick="showSection('catalog')">
+                <span class="nav-icon">🚗</span>Catálogo
+            </button>
+            <button onclick="showSection('booking')">
+                <span class="nav-icon">📅</span>Reservar
+            </button>
+            <button onclick="showSection('search')">
+                <span class="nav-icon">🔍</span>Mis Reservas
+            </button>
+        </nav>
+    </div>
+</header>
+
+<!-- ── Toast ────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Detail Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<main>
+
+<!-- ══════════ CATALOG ══════════ -->
+<div class="section active" id="section-catalog">
+    <div class="section-header">
+        <h1>Nuestro catálogo</h1>
+        <p>Encuentra el coche perfecto para tu próximo viaje</p>
+    </div>
+
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>Tipo de vehículo</label>
+            <select id="filterType" onchange="loadCars()">
+                <option>Todos</option>
+                <option>Compacto</option>
+                <option>Sedán</option>
+                <option>SUV</option>
+                <option>Furgoneta</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Precio mínimo (€/día)</label>
+            <input type="number" id="filterMin" placeholder="0" onchange="loadCars()">
+        </div>
+        <div class="filter-group">
+            <label>Precio máximo (€/día)</label>
+            <input type="number" id="filterMax" placeholder="200" onchange="loadCars()">
+        </div>
+    </div>
+
+    <div class="car-grid" id="carGrid"></div>
+</div>
+
+<!-- ══════════ BOOKING ══════════ -->
+<div class="section" id="section-booking">
+    <div class="section-header">
+        <h1>Hacer una reserva</h1>
+        <p>Rellena los datos y reserva tu coche en segundos</p>
+    </div>
+
+    <div class="booking-container">
+        <div class="form-card">
+            <h2>📋 Datos de la reserva</h2>
+
+            <div class="form-group">
+                <label>Nombre completo</label>
+                <input type="text" id="bkName" placeholder="Ej: María García">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="bkEmail" placeholder="maria@email.com">
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="tel" id="bkPhone" placeholder="+34 612 345 678">
+            </div>
+            <div class="form-group">
+                <label>Vehículo</label>
+                <select id="bkCar" onchange="updateSummary()"></select>
+            </div>
+            <div class="form-group">
+                <label>Fecha de recogida</label>
+                <input type="date" id="bkPickup" onchange="updateSummary()">
+            </div>
+            <div class="form-group">
+                <label>Fecha de devolución</label>
+                <input type="date" id="bkReturn" onchange="updateSummary()">
+            </div>
+            <div class="form-group">
+                <label>Lugar de recogida</label>
+                <select id="bkLocation">
+                    <option>Aeropuerto de Valencia</option>
+                    <option>Estación AVE Valencia</option>
+                    <option>Oficina Castellón Centro</option>
+                    <option>Oficina Alicante Puerto</option>
+                </select>
+            </div>
+
+            <div id="formErrors" style="margin-bottom:1rem"></div>
+            <button class="btn btn-primary" onclick="submitBooking()" style="width:100%;justify-content:center;padding:14px;">
+                Confirmar Reserva
+            </button>
+        </div>
+
+        <div>
+            <div class="summary-card" id="summaryCard">
+                <h2>📊 Resumen</h2>
+                <div id="summaryContent">
+                    <p style="color:var(--text-muted);font-size:0.9rem;">Selecciona un coche y las fechas para ver el resumen.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ SEARCH ══════════ -->
+<div class="section" id="section-search">
+    <div class="section-header">
+        <h1>Consultar reservas</h1>
+        <p>Busca tus reservas por email o código de reserva</p>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Email o código de reserva (ej: RES-A1B2C3)">
+        <button class="btn btn-primary" onclick="searchReservations()">Buscar</button>
+    </div>
+
+    <div class="res-list" id="resList">
+        <div class="empty-state">
+            <div class="empty-icon">🔎</div>
+            <p>Introduce tu email o código de reserva para consultar tus reservas</p>
+        </div>
+    </div>
+</div>
+
+</main>
+
+<script>
+    // ── Globals ─────────────────────────────────────
+    let carsData = [];
+
+    // ── Navigation ──────────────────────────────────
+    function showSection(name) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + name).classList.add('active');
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        if (name === 'booking') populateCarSelect();
+    }
+
+    // ── Toast ───────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast ' + type + ' show';
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    // ── Load Cars ───────────────────────────────────
+    async function loadCars() {
+        const type = document.getElementById('filterType').value;
+        const min = document.getElementById('filterMin').value;
+        const max = document.getElementById('filterMax').value;
+
+        let url = '/api/cars?';
+        if (type !== 'Todos') url += `type=${encodeURIComponent(type)}&`;
+        if (min) url += `min_price=${min}&`;
+        if (max) url += `max_price=${max}&`;
+
+        const res = await fetch(url);
+        carsData = await res.json();
+        renderCars();
+    }
+
+    function renderCars() {
+        const grid = document.getElementById('carGrid');
+        if (!carsData.length) {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🚫</div><p>No se encontraron coches con esos filtros</p></div>`;
+            return;
+        }
+        grid.innerHTML = carsData.map(car => `
+            <div class="car-card" onclick="showCarDetail(${car.id})">
+                <div class="car-card-visual" style="background:${car.color}">
+                    ${car.image_emoji}
+                </div>
+                <div class="car-card-body">
+                    <h3>${car.brand} ${car.model}</h3>
+                    <div class="car-year">${car.year}</div>
+                    <div class="car-tags">
+                        <span class="tag">${car.type}</span>
+                        <span class="tag">${car.seats} plazas</span>
+                        <span class="tag">${car.fuel}</span>
+                        <span class="tag">${car.transmission}</span>
+                    </div>
+                </div>
+                <div class="car-card-footer">
+                    <div class="price">${car.price_per_day}€ <small>/día</small></div>
+                    <button class="btn btn-secondary btn-sm">Ver detalles</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ── Car Detail Modal ────────────────────────────
+    async function showCarDetail(id) {
+        const res = await fetch(`/api/cars/${id}`);
+        const car = await res.json();
+
+        document.getElementById('modalContent').innerHTML = `
+            <div style="text-align:center;font-size:4rem;margin-bottom:1rem">${car.image_emoji}</div>
+            <h2>${car.brand} ${car.model} <span style="color:var(--text-muted);font-weight:400">${car.year}</span></h2>
+            <p style="color:var(--text-secondary);margin:0.5rem 0 1.5rem">${car.description}</p>
+
+            <div class="detail-row"><span class="detail-label">Tipo</span><span class="detail-value">${car.type}</span></div>
+            <div class="detail-row"><span class="detail-label">Plazas</span><span class="detail-value">${car.seats}</span></div>
+            <div class="detail-row"><span class="detail-label">Combustible</span><span class="detail-value">${car.fuel}</span></div>
+            <div class="detail-row"><span class="detail-label">Transmisión</span><span class="detail-value">${car.transmission}</span></div>
+            <div class="detail-row"><span class="detail-label">Precio</span><span class="detail-value price">${car.price_per_day}€/día</span></div>
+            <div class="detail-row"><span class="detail-label">Kilometraje</span><span class="detail-value">${car.mileage_policy}</span></div>
+
+            <h3 style="margin-top:1.5rem;margin-bottom:0.5rem;font-size:1rem">Equipamiento</h3>
+            <div class="equip-list">
+                ${car.equipment.map(e => `<span class="equip-item">✓ ${e}</span>`).join('')}
+            </div>
+
+            <div style="margin-top:1.5rem;display:flex;gap:10px">
+                <button class="btn btn-primary" onclick="goToBooking(${car.id})">Reservar este coche</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>
+            </div>
+        `;
+        document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('open');
+    }
+
+    function goToBooking(carId) {
+        closeModal();
+        // Switch to booking tab
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-booking').classList.add('active');
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('nav button')[1].classList.add('active');
+        populateCarSelect(carId);
+    }
+
+    // ── Booking ─────────────────────────────────────
+    async function populateCarSelect(selectedId) {
+        if (!carsData.length) {
+            const res = await fetch('/api/cars');
+            carsData = await res.json();
+        }
+        const sel = document.getElementById('bkCar');
+        sel.innerHTML = carsData.map(c =>
+            `<option value="${c.id}" ${c.id == selectedId ? 'selected' : ''}>${c.brand} ${c.model} — ${c.price_per_day}€/día</option>`
+        ).join('');
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const carId = parseInt(document.getElementById('bkCar').value);
+        const pickup = document.getElementById('bkPickup').value;
+        const ret = document.getElementById('bkReturn').value;
+        const car = carsData.find(c => c.id === carId);
+        const content = document.getElementById('summaryContent');
+
+        if (!car || !pickup || !ret) {
+            content.innerHTML = `<p style="color:var(--text-muted);font-size:0.9rem;">Selecciona un coche y las fechas para ver el resumen.</p>`;
+            return;
+        }
+
+        const d1 = new Date(pickup), d2 = new Date(ret);
+        const days = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+
+        if (days <= 0) {
+            content.innerHTML = `<p class="error-text">La fecha de devolución debe ser posterior a la recogida.</p>`;
+            return;
+        }
+
+        const total = days * car.price_per_day;
+        content.innerHTML = `
+            <div class="summary-line"><span>Vehículo</span><span>${car.brand} ${car.model}</span></div>
+            <div class="summary-line"><span>Recogida</span><span>${formatDate(pickup)}</span></div>
+            <div class="summary-line"><span>Devolución</span><span>${formatDate(ret)}</span></div>
+            <div class="summary-line"><span>Días</span><span>${days}</span></div>
+            <div class="summary-line"><span>Precio/día</span><span>${car.price_per_day}€</span></div>
+            <div class="summary-total"><span>Total</span><span class="price">${total}€</span></div>
+        `;
+    }
+
+    async function submitBooking() {
+        const data = {
+            car_id: document.getElementById('bkCar').value,
+            customer_name: document.getElementById('bkName').value,
+            email: document.getElementById('bkEmail').value,
+            phone: document.getElementById('bkPhone').value,
+            pickup_date: document.getElementById('bkPickup').value,
+            return_date: document.getElementById('bkReturn').value,
+            pickup_location: document.getElementById('bkLocation').value,
+        };
+
+        const res = await fetch('/api/reservations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+            document.getElementById('formErrors').innerHTML =
+                result.errors.map(e => `<p class="error-text">${e}</p>`).join('');
+            return;
+        }
+
+        document.getElementById('formErrors').innerHTML = '';
+        showToast(`¡Reserva ${result.id} confirmada! Total: ${result.total_price}€`);
+
+        // Clear form
+        ['bkName','bkEmail','bkPhone','bkPickup','bkReturn'].forEach(id =>
+            document.getElementById(id).value = ''
+        );
+        updateSummary();
+    }
+
+    // ── Search Reservations ─────────────────────────
+    async function searchReservations() {
+        const q = document.getElementById('searchInput').value.trim();
+        if (!q) return;
+
+        const res = await fetch(`/api/reservations/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const list = document.getElementById('resList');
+
+        if (!data.length) {
+            list.innerHTML = `<div class="empty-state"><div class="empty-icon">🤷</div><p>No se encontraron reservas para "${q}"</p></div>`;
+            return;
+        }
+
+        const statusLabels = {
+            confirmada: 'Confirmada',
+            en_curso: 'En curso',
+            completada: 'Completada',
+            cancelada: 'Cancelada'
+        };
+
+        list.innerHTML = data.map(r => `
+            <div class="res-card">
+                <div>
+                    <span class="res-code">${r.id}</span>
+                    <div class="res-car-name">${r.car.image_emoji || ''} ${r.car.brand} ${r.car.model}</div>
+                    <div class="res-dates">📅 ${formatDate(r.pickup_date)} → ${formatDate(r.return_date)} · 📍 ${r.pickup_location}</div>
+                    <span class="status-badge status-${r.status}">${statusLabels[r.status]}</span>
+                    ${r.status === 'confirmada' ? `<button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="cancelRes('${r.id}')">Cancelar</button>` : ''}
+                </div>
+                <div class="res-price">${r.total_price}€</div>
+            </div>
+        `).join('');
+    }
+
+    async function cancelRes(id) {
+        if (!confirm('¿Seguro que quieres cancelar esta reserva?')) return;
+        const res = await fetch(`/api/reservations/${id}/cancel`, { method: 'POST' });
+        if (res.ok) {
+            showToast('Reserva cancelada', 'error');
+            searchReservations();
+        }
+    }
+
+    // ── Helpers ──────────────────────────────────────
+    function formatDate(d) {
+        const [y, m, day] = d.split('-');
+        return `${day}/${m}/${y}`;
+    }
+
+    // handle enter key in search
+    document.getElementById('searchInput')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') searchReservations();
+    });
+
+    // ── Init ────────────────────────────────────────
+    loadCars();
+</script>
+</body>
+</html>
