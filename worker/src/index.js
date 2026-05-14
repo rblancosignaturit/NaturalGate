@@ -83,6 +83,8 @@ async function askAI(ai, prompt, systemPrompt) {
 // ─── Robust JSON extraction ─────────────────────────────────────────────────
 
 function extractJson(text) {
+  // Ensure the AI response is a string before processing
+  text = typeof text === "string" ? text : String(text);
   // Try to find the outermost JSON object or array
   let depth = 0;
   let start = -1;
