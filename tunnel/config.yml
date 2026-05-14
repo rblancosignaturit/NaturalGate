@@ -1,0 +1,22 @@
+# ─── Cloudflare Tunnel Configuration ─────────────────────────────────────────
+# File: ~/.cloudflared/config.yml
+#
+# Prerequisites:
+#   1. Install cloudflared: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+#   2. Authenticate: cloudflared tunnel login
+#   3. Create tunnel: cloudflared tunnel create smart-gateway
+#   4. Copy the tunnel ID and credentials file path below
+#   5. Create DNS record: cloudflared tunnel route dns smart-gateway api.tu-dominio.com
+
+tunnel: <YOUR_TUNNEL_ID>  # ← From step 3
+credentials-file: /home/santi/.cloudflared/<YOUR_TUNNEL_ID>.json
+
+ingress:
+  # FastAPI backend
+  - hostname: api.tu-dominio.com  # ← Your domain
+    service: http://localhost:8080
+    originRequest:
+      noTLSVerify: true
+
+  # Catch-all (required)
+  - service: http_status:404
