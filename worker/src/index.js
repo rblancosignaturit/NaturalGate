@@ -56,7 +56,7 @@ RULES:
 - Infer filters from context (e.g. "active users" → active=true)
 - Understand Spanish, English, Valencian, and other languages.
 - Today's date is ${new Date().toISOString().split("T")[0]}
-- "last month" means since one month ago, "this year" means since January, etc.`,
+- "last month" means since one month ago, "this year" means since January, etc.`;
 
   const raw = await askInferenceServer(ai, query, systemPrompt);
 
