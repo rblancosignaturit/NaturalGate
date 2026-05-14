@@ -8,4 +8,4 @@ binding = "AI"
 
 # --- Environment variables ---
 [vars]
-BACKEND_URL = "http://localhost:8080"
+BACKEND_URL = "http://naturalgate.mvplab.space:8080"
