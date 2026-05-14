@@ -2,7 +2,7 @@
  * Smart Gateway — Cloudflare Worker
  * 
  * An intelligent API gateway that translates natural language queries
- * into backend API calls using Claude, then formats the response.
+ * into backend API calls using AI Models, then formats the response.
  * 
  * Deploy: wrangler deploy
  */
@@ -26,7 +26,7 @@ async function getApiSpec(backendUrl) {
 
 const AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
-async function askClaude(ai, prompt, systemPrompt) {
+async function askInferenceServer(ai, prompt, systemPrompt) {
   const response = await ai.run(AI_MODEL, {
     messages: [
       { role: "system", content: systemPrompt },
@@ -58,13 +58,13 @@ RULES:
 - Today's date is ${new Date().toISOString().split("T")[0]}
 - "last month" means since one month ago, "this year" means since January, etc.`;
 
-  const raw = await askClaude(apiKey, query, systemPrompt);
+  const raw = await askInferenceServer(apiKey, query, systemPrompt);
 
   try {
     const cleaned = raw.replace(/```json\s?|```/g, "").trim();
     return JSON.parse(cleaned);
   } catch {
-    return { error: "Failed to parse Claude response", raw };
+    return { error: "Failed to parse response", raw };
   }
 }
 
@@ -79,7 +79,7 @@ async function formatResponse(apiKey, query, data, explain) {
 API returned: ${JSON.stringify(data)}
 Summarize the results.`;
 
-  return askClaude(apiKey, prompt, systemPrompt);
+  return askInferenceServer(apiKey, prompt, systemPrompt);
 }
 
 // ─── Request handler ────────────────────────────────────────────────────────
