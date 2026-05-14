@@ -43,25 +43,35 @@ async function askInferenceServer(ai, prompt, systemPrompt) {
 
 // ─── Natural language → API call translation ────────────────────────────────
 
-async function translateQuery(apiKey, query, spec) {
+async function translateQuery(ai, query, spec) {
   const systemPrompt = `You are an API routing engine. Given a natural language query and an API specification, determine which endpoint to call and with what parameters.
 
 AVAILABLE ENDPOINTS:
 ${JSON.stringify(spec.endpoints, null, 2)}
 
 RULES:
-- Respond ONLY with a JSON object, no markdown, no explanation.
+- Respond ONLY with a JSON object, no markdown, no explanation, no preamble.
 - Format: {"method": "GET", "path": "/api/...", "params": {"key": "value"}}
 - If the query doesn't match any endpoint, respond: {"error": "No matching endpoint found"}
 - Infer filters from context (e.g. "active users" → active=true)
 - Understand Spanish, English, Valencian, and other languages.
 - Today's date is ${new Date().toISOString().split("T")[0]}
-- "last month" means since one month ago, "this year" means since January, etc.`;
+- "last month" means since one month ago, "this year" means since January, etc.`,
 
-  const raw = await askInferenceServer(apiKey, query, systemPrompt);
+  const raw = await askInferenceServer(ai, query, systemPrompt);
 
   try {
-    const cleaned = raw.replace(/```json\s?|```/g, "").trim();
+    // Try to extract the first JSON object or array from the response
+    const objectMatch = raw.match(/\{[\s\S]*?\}/);
+    const arrayMatch = raw.match(/\[[\s\S]*?\]/);
+    let candidate = raw;
+    if (objectMatch) {
+      candidate = objectMatch[0];
+    } else if (arrayMatch) {
+      candidate = arrayMatch[0];
+    }
+    // Also strip markdown code fences just in case
+    const cleaned = candidate.replace(/```json\s?|```/g, "").trim();
     return JSON.parse(cleaned);
   } catch {
     return { error: "Failed to parse response", raw };
@@ -70,7 +80,7 @@ RULES:
 
 // ─── Response formatting ────────────────────────────────────────────────────
 
-async function formatResponse(apiKey, query, data, explain) {
+async function formatResponse(ai, query, data, explain) {
   if (!explain) return null;
 
   const systemPrompt = `You are a helpful API assistant. The user asked a question in natural language, and the backend returned data. Provide a brief, friendly summary of the results in the same language the user used. Be concise (2-3 sentences max). Do not repeat all the raw data, just summarize the key points.`;
@@ -79,7 +89,7 @@ async function formatResponse(apiKey, query, data, explain) {
 API returned: ${JSON.stringify(data)}
 Summarize the results.`;
 
-  return askInferenceServer(apiKey, prompt, systemPrompt);
+  return askInferenceServer(ai, prompt, systemPrompt);
 }
 
 // ─── Request handler ────────────────────────────────────────────────────────
