@@ -84,6 +84,46 @@
 
         nav { display: flex; gap: 4px; }
 
+        /* ── NL Ask Bar ─────────────────────────────────── */
+        .ask-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+            max-width: 720px;
+        }
+
+        .ask-bar input {
+            flex: 1;
+            font-size: 1rem;
+            padding: 12px 16px;
+        }
+
+        .ask-result {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .ask-result.show { display: block; }
+
+        .ask-summary {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .ask-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
         nav button {
             background: none;
             border: none;
@@ -580,6 +620,9 @@
             <button onclick="showSection('search')">
                 <span class="nav-icon">🔍</span>Mis Reservas
             </button>
+            <button onclick="showSection('assistant')">
+                <span class="nav-icon">✨</span>Asistente
+            </button>
         </nav>
     </div>
 </header>
@@ -707,6 +750,25 @@
             <div class="empty-icon">🔎</div>
             <p>Introduce tu email o código de reserva para consultar tus reservas</p>
         </div>
+    </div>
+</div>
+
+<!-- ══════════ SMART ASSISTANT ══════════ -->
+<div class="section" id="section-assistant">
+    <div class="section-header">
+        <h1>Asistente inteligente</h1>
+        <p>Pregunta lo que quieras en lenguaje natural y te buscamos la respuesta</p>
+    </div>
+
+    <div class="ask-bar">
+        <input type="text" id="askInput" placeholder="Ej: muéstrame SUVs disponibles en Valencia">
+        <button class="btn btn-primary" onclick="submitAsk()">Preguntar</button>
+    </div>
+
+    <div class="ask-result" id="askResult">
+        <div class="ask-summary" id="askSummary"></div>
+        <pre id="askData" style="background:var(--bg-input);padding:1rem;border-radius:var(--radius-sm);overflow-x:auto;font-size:0.85rem;color:var(--text-secondary);"></pre>
+        <div class="ask-meta" id="askMeta"></div>
     </div>
 </div>
 
@@ -952,9 +1014,46 @@
         return `${day}/${m}/${y}`;
     }
 
-    // handle enter key in search
+    // ── Smart Assistant ──────────────────────────────
+    async function submitAsk() {
+        const query = document.getElementById('askInput').value.trim();
+        if (!query) return;
+
+        const btn = document.querySelector('#section-assistant .btn-primary');
+        const originalText = btn.textContent;
+        btn.textContent = 'Pensando...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('https://naturalgate.rubenb-signaturit.workers.dev/ask?explain=true', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query }),
+            });
+
+            const data = await res.json();
+            const resultBox = document.getElementById('askResult');
+            resultBox.classList.add('show');
+
+            document.getElementById('askSummary').textContent = data.summary || '';
+            document.getElementById('askData').textContent = JSON.stringify(data.data ?? data, null, 2);
+            document.getElementById('askMeta').innerHTML =
+                `Traducido a: <code>${data.translated_to?.method || 'N/A'} ${data.translated_to?.path || ''}</code> · ` +
+                `${data.meta?.elapsed_ms || '?'} ms`;
+        } catch (err) {
+            showToast('Error al contactar con el asistente: ' + err.message, 'error');
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // handle enter keys
     document.getElementById('searchInput')?.addEventListener('keydown', e => {
         if (e.key === 'Enter') searchReservations();
+    });
+    document.getElementById('askInput')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitAsk();
     });
 
     // ── Init ────────────────────────────────────────

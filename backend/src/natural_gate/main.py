@@ -24,20 +24,7 @@ app.include_router(payments_router.router)
 app.include_router(stats_router.router)
 
 STATIC_DIR = Path(__file__).parent / "presentation" / "static"
-app.mount("/ui", StaticFiles(directory=STATIC_DIR, html=True), name="ui")
-
-
-@app.get("/")
-def root() -> dict:
-    """Service entry point that redirects discovery to Swagger UI."""
-    return {
-        "service": "Natural Coches Backend",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "redoc": "/redoc",
-        "ui": "/ui",
-        "endpoints": ["/api/cars", "/api/reservations", "/api/payments", "/api/stats"],
-    }
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 
 @app.get("/api/spec")
