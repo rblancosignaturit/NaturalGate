@@ -24,7 +24,7 @@ app.include_router(payments_router.router)
 app.include_router(stats_router.router)
 
 STATIC_DIR = Path(__file__).parent / "presentation" / "static"
-app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+app.mount("/ui", StaticFiles(directory=STATIC_DIR, html=True), name="ui")
 
 
 @app.get("/api/spec")
@@ -41,4 +41,17 @@ def get_spec() -> dict:
             {"method": "POST", "path": "/api/payments/confirm", "description": "Confirm payment."},
             {"method": "GET", "path": "/api/stats", "description": "Overall statistics."},
         ]
+    }
+
+
+@app.get("/")
+def root() -> dict:
+    """Service entry point."""
+    return {
+        "service": "Natural Coches Backend",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "redoc": "/redoc",
+        "ui": "/ui",
+        "endpoints": ["/api/cars", "/api/reservations", "/api/payments", "/api/stats"],
     }
