@@ -6,6 +6,7 @@ compatibility_date = "2024-09-23"
 [ai]
 binding = "AI"
 
-# --- Environment variables ---
+# --- Backend URL ---
+# Use your public backend URL. If behind a tunnel, use the tunnel hostname.
 [vars]
 BACKEND_URL = "http://naturalgate.mvplab.space:8080"

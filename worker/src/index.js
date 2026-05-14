@@ -303,7 +303,14 @@ export default {
         const spec = await getApiSpec(env.BACKEND_URL);
         if (!spec) {
           return Response.json(
-            { error: "Could not fetch backend API spec" },
+            {
+              error: "Could not fetch backend API spec",
+              detail: `Worker tried to reach ${env.BACKEND_URL}/api/spec but failed.`,
+              solutions: [
+                "If testing locally: run 'npx wrangler dev' instead of using the deployed Worker",
+                "If using deployed Worker: your backend must be publicly accessible. Set up cloudflared tunnel and update BACKEND_URL in wrangler.toml"
+              ],
+            },
             { status: 502, headers: corsHeaders }
           );
         }
