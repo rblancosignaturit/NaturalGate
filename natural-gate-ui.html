@@ -33,7 +33,6 @@
     overflow-x: hidden;
   }
 
-  /* ── Animated background ── */
   body::before {
     content: '';
     position: fixed;
@@ -63,7 +62,6 @@
     66% { transform: translate(-20px, 20px) scale(0.95); }
   }
 
-  /* ── Layout ── */
   .app {
     position: relative;
     z-index: 1;
@@ -72,7 +70,6 @@
     padding: 2rem 1.5rem 4rem;
   }
 
-  /* ── Header ── */
   .header {
     display: flex;
     align-items: center;
@@ -103,7 +100,6 @@
     animation: slideDown 0.6s ease-out 0.1s both;
   }
 
-  /* ── Input area ── */
   .input-section {
     animation: slideUp 0.5s ease-out 0.2s both;
   }
@@ -149,7 +145,6 @@
   .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   .send-btn svg { width: 18px; height: 18px; }
 
-  /* ── Options row ── */
   .options-row {
     display: flex;
     align-items: center;
@@ -188,7 +183,6 @@
   }
   .toggle-track.active .toggle-thumb { transform: translateX(16px); }
 
-  /* ── Examples ── */
   .examples {
     margin-top: 1.5rem;
     display: flex;
@@ -222,7 +216,6 @@
     transform: translateY(-1px);
   }
 
-  /* ── Results ── */
   .results-area {
     margin-top: 2rem;
     display: flex;
@@ -311,7 +304,6 @@
     line-height: 1.5;
   }
 
-  /* ── Loading ── */
   .loading-card {
     background: var(--card-bg);
     border: 1px solid rgba(148,163,184,0.08);
@@ -333,7 +325,6 @@
   .loading-dots span:nth-child(3) { animation-delay: 0.32s; }
   .loading-text { color: var(--mid-gray); font-size: 0.9rem; }
 
-  /* ── Error ── */
   .error-card {
     background: rgba(239,68,68,0.08);
     border: 1px solid rgba(239,68,68,0.2);
@@ -344,30 +335,6 @@
     animation: fadeIn 0.3s ease-out;
   }
 
-  /* ── Config banner ── */
-  .config-banner {
-    background: rgba(246,130,31,0.08);
-    border: 1px solid rgba(246,130,31,0.2);
-    border-radius: 10px;
-    padding: 0.85rem 1.25rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    animation: slideDown 0.5s ease-out 0.15s both;
-  }
-  .config-banner .icon { font-size: 1.1rem; }
-  .config-banner p { font-size: 0.82rem; color: var(--light-gray); line-height: 1.4; }
-  .config-banner code {
-    background: rgba(246,130,31,0.15);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--orange);
-  }
-
-  /* ── Animations ── */
   @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -376,7 +343,6 @@
     40% { transform: scale(1); }
   }
 
-  /* ── Responsive ── */
   @media (max-width: 600px) {
     .app { padding: 1.25rem 1rem 3rem; }
     .header h1 { font-size: 1.3rem; }
@@ -391,24 +357,16 @@
 <body>
 
 <div class="app">
-  <!-- Header -->
   <div class="header">
     <div class="logo">⚡</div>
     <h1><span>Natural</span> Gate</h1>
   </div>
-  <p class="tagline">Talk to your API in natural language</p>
+  <p class="tagline">Ask about our car fleet in natural language</p>
 
-  <!-- Config -->
-  <div class="config-banner">
-    <span class="icon">⚙</span>
-    <p>Set your gateway URL below. Default: <code>http://localhost:8787</code> (wrangler dev)</p>
-  </div>
-
-  <!-- Input -->
   <div class="input-section">
     <div class="input-wrapper">
       <input type="text" class="query-input" id="queryInput"
-        placeholder='Try: "dame los usuarios activos"'
+        placeholder='Try: "show me available SUVs in Valencia"'
         autocomplete="off" spellcheck="false">
       <button class="send-btn" id="sendBtn" onclick="sendQuery()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -421,34 +379,27 @@
         <div class="toggle-track" id="explainToggle">
           <div class="toggle-thumb"></div>
         </div>
-        ?explain=true
-      </label>
-      <label class="option-toggle" style="margin-left: auto;">
-        <span style="color: var(--mid-gray); font-size: 0.78rem;">Gateway:</span>
-        <input type="text" id="gatewayUrl" value="http://localhost:8787"
-          style="background: var(--card-bg); border: 1px solid rgba(148,163,184,0.15); border-radius: 6px;
-          padding: 0.3rem 0.6rem; color: var(--white); font-family: 'JetBrains Mono', monospace;
-          font-size: 0.75rem; width: 200px; outline: none;">
+        AI Summary
       </label>
     </div>
   </div>
 
-  <!-- Example queries -->
   <div class="examples">
     <span class="examples-label">Try these</span>
-    <span class="example-chip" onclick="tryExample(this)">dame los usuarios activos</span>
-    <span class="example-chip" onclick="tryExample(this)">show me pending orders</span>
-    <span class="example-chip" onclick="tryExample(this)">productos de seguridad</span>
-    <span class="example-chip" onclick="tryExample(this)">cuánto hemos facturado?</span>
-    <span class="example-chip" onclick="tryExample(this)">revenue by week</span>
-    <span class="example-chip" onclick="tryExample(this)">quién es el usuario 3?</span>
+    <span class="example-chip" onclick="tryExample(this)">show me available SUVs in Valencia</span>
+    <span class="example-chip" onclick="tryExample(this)">list BMWs under 80 euros per day</span>
+    <span class="example-chip" onclick="tryExample(this)">how many reservations do we have?</span>
+    <span class="example-chip" onclick="tryExample(this)">find reservation for maria</span>
+    <span class="example-chip" onclick="tryExample(this)">cancel reservation RES-A1B2C3</span>
+    <span class="example-chip" onclick="tryExample(this)">show me electric cars</span>
+    <span class="example-chip" onclick="tryExample(this)">what is our total revenue?</span>
   </div>
 
-  <!-- Results -->
   <div class="results-area" id="results"></div>
 </div>
 
 <script>
+  const GATEWAY_URL = "https://naturalgate.rubenb-signaturit.workers.dev";
   let explainEnabled = false;
 
   function toggleExplain() {
@@ -473,9 +424,7 @@
     const btn = document.getElementById('sendBtn');
     btn.disabled = true;
     const results = document.getElementById('results');
-    const baseUrl = document.getElementById('gatewayUrl').value.trim().replace(/\/+$/, '');
 
-    // Add loading
     const loadingId = 'loading-' + Date.now();
     results.insertAdjacentHTML('afterbegin', `
       <div class="loading-card" id="${loadingId}">
@@ -485,7 +434,7 @@
     `);
 
     try {
-      const url = `${baseUrl}/ask${explainEnabled ? '?explain=true' : ''}`;
+      const url = `${GATEWAY_URL}/ask${explainEnabled ? '?explain=true' : ''}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -494,7 +443,6 @@
 
       const data = await response.json();
 
-      // Remove loading
       document.getElementById(loadingId)?.remove();
 
       if (data.error) {
@@ -539,8 +487,8 @@
       document.getElementById(loadingId)?.remove();
       results.insertAdjacentHTML('afterbegin', `
         <div class="error-card">
-          ⚠ Could not reach gateway at <strong>${escapeHtml(baseUrl)}</strong><br>
-          <small>Make sure the Worker is running (npx wrangler dev) and the URL is correct.</small>
+          ⚠ Could not reach gateway at <strong>${escapeHtml(GATEWAY_URL)}</strong><br>
+          <small>Make sure the Worker is deployed and the tunnel is running.</small>
         </div>
       `);
     }

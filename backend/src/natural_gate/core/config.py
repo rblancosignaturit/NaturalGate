@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8080
     stripe_secret_key: str = "sk_test_placeholder"
-    database_url: str = "postgresql://postgres:postgres@localhost:54322/natural_gate"
+    database_url: str = "sqlite:///./natural_gate.db"
 
 
 settings = Settings()

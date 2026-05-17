@@ -24,6 +24,7 @@ __pycache__/
 venv/
 env/
 .pytest_cache/
+*.db
 
 # ─── Cloudflare Tunnel credentials ───────────────────────────────
 # Never commit tunnel credentials (they grant access to your tunnel)

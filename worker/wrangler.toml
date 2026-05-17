@@ -1,12 +1,24 @@
-name = "smart-gateway"
+name = "naturalgate"
 main = "src/index.js"
-compatibility_date = "2024-09-23"
+compatibility_date = "2025-02-04"
 
-# --- AI binding (Workers AI - no API key needed) ---
+# ─── AI binding (Workers AI) ───
 [ai]
 binding = "AI"
 
-# --- Backend URL ---
-# Use your public backend URL. If behind a tunnel, use the tunnel hostname.
+# ─── VPC Service Binding (connect to backend via tunnel) ───
+# Uncomment and set service_id after creating the VPC service in the dashboard
+# [[vpc_services]]
+# binding = "BACKEND_VPC"
+# service_id = "<VPC_SERVICE_ID>"
+# remote = true
+
+# ─── VPC Network Binding (alternative: bind directly to tunnel) ───
+# [[vpc_networks]]
+# binding = "BACKEND_VPC"
+# tunnel_id = "1902d137-6f08-4088-b3e6-d6ca8a2cc68f"
+# remote = true
+
+# ─── Environment variables ───
 [vars]
-BACKEND_URL = "http://naturalgate.mvplab.space:8080"
+BACKEND_URL = "https://1902d137-6f08-4088-b3e6-d6ca8a2cc68f.cfargotunnel.com"
