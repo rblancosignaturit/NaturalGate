@@ -262,16 +262,19 @@ export default {
 
     // ─── Route: GET /health ───
     if (url.pathname === "/health") {
+      const hasVpc = !!env.BACKEND_VPC;
+      const hasUrl = !!env.BACKEND_URL;
+      const vpcType = typeof env.BACKEND_VPC;
       try {
         const res = await backendFetch(env, "/api/stats");
         const backend = res.ok ? "ok" : `error_${res.status}`;
         return Response.json(
-          { gateway: "ok", backend, timestamp: new Date().toISOString() },
+          { gateway: "ok", backend, has_vpc_binding: hasVpc, vpc_type: vpcType, has_backend_url: hasUrl, timestamp: new Date().toISOString() },
           { headers: corsHeaders }
         );
       } catch (err) {
         return Response.json(
-          { gateway: "ok", backend: "unreachable", error: err.message },
+          { gateway: "ok", backend: "unreachable", has_vpc_binding: hasVpc, vpc_type: vpcType, has_backend_url: hasUrl, error: err.message },
           { status: 502, headers: corsHeaders }
         );
       }
