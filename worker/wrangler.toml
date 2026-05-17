@@ -7,18 +7,7 @@ compatibility_date = "2025-02-04"
 binding = "AI"
 
 # ─── VPC Service Binding (connect to backend via tunnel) ───
-# Uncomment and set service_id after creating the VPC service in the dashboard
-# [[vpc_services]]
-# binding = "BACKEND_VPC"
-# service_id = "<VPC_SERVICE_ID>"
-# remote = true
-
-# ─── VPC Network Binding (alternative: bind directly to tunnel) ───
-# [[vpc_networks]]
-# binding = "BACKEND_VPC"
-# tunnel_id = "1902d137-6f08-4088-b3e6-d6ca8a2cc68f"
-# remote = true
-
-# ─── Environment variables ───
-[vars]
-BACKEND_URL = "https://1902d137-6f08-4088-b3e6-d6ca8a2cc68f.cfargotunnel.com"
+[[vpc_services]]
+binding = "BACKEND_VPC"
+service_id = "019e382e-9245-7e03-8b0e-6aad136b9328"
+remote = true
