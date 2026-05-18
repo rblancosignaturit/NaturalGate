@@ -90,18 +90,16 @@ async function getApiSpec(env) {
 // ─── Workers AI ─────────────────────────────────────────────────────────────
 
 async function askAI(ai, prompt, systemPrompt) {
-  const response = await ai.run(AI_MODEL, {
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt },
-    ],
+  const result = await ai.run(AI_MODEL, {
+    prompt: `${systemPrompt}\n\nUser: ${prompt}\n\nAssistant:`,
   });
 
-  if (!response || !response.response) {
+  const text = result?.response || "";
+  if (!text) {
     throw new Error("Workers AI returned an empty response");
   }
 
-  return response.response;
+  return typeof text === "string" ? text : JSON.stringify(text);
 }
 
 // ─── Robust JSON extraction ─────────────────────────────────────────────────
@@ -265,19 +263,16 @@ export default {
 
     // ─── Route: GET /health ───
     if (url.pathname === "/health") {
-      const hasVpc = !!env.BACKEND_VPC;
-      const hasUrl = !!env.BACKEND_URL;
-      const vpcType = typeof env.BACKEND_VPC;
       try {
         const res = await backendFetch(env, "/api/stats");
         const backend = res.ok ? "ok" : `error_${res.status}`;
         return Response.json(
-          { gateway: "ok", backend, has_vpc_binding: hasVpc, vpc_type: vpcType, has_backend_url: hasUrl, timestamp: new Date().toISOString() },
+          { gateway: "ok", backend, timestamp: new Date().toISOString() },
           { headers: corsHeaders }
         );
       } catch (err) {
         return Response.json(
-          { gateway: "ok", backend: "unreachable", has_vpc_binding: hasVpc, vpc_type: vpcType, has_backend_url: hasUrl, error: err.message },
+          { gateway: "ok", backend: "unreachable", error: err.message },
           { status: 502, headers: corsHeaders }
         );
       }

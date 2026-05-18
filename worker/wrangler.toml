@@ -8,4 +8,4 @@ binding = "AI"
 
 # ─── Backend URL (tunnel internal hostname) ───
 [vars]
-BACKEND_URL = "https://1902d137-6f08-4088-b3e6-d6ca8a2cc68f.cfargotunnel.com"
+BACKEND_URL = "https://upward-obsession-carrot.ngrok-free.dev"
