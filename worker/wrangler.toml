@@ -10,4 +10,3 @@ binding = "AI"
 [[vpc_services]]
 binding = "BACKEND_VPC"
 service_id = "019e382e-9245-7e03-8b0e-6aad136b9328"
-remote = true

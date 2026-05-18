@@ -58,6 +58,9 @@ async function backendFetch(env, path, options = {}) {
       const url = new URL(path, "http://localhost:8080");
       return await env.BACKEND_VPC.fetch(url.toString(), opts);
     }
+    if (!env.BACKEND_URL) {
+      throw new Error("BACKEND_URL not configured and no VPC binding available");
+    }
     const url = new URL(path, env.BACKEND_URL);
     return await fetch(url.toString(), opts);
   } finally {
