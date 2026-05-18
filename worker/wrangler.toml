@@ -6,7 +6,6 @@ compatibility_date = "2025-02-04"
 [ai]
 binding = "AI"
 
-# ─── VPC Service Binding (connect to backend via tunnel) ───
-[[vpc_services]]
-binding = "BACKEND_VPC"
-service_id = "019e382e-9245-7e03-8b0e-6aad136b9328"
+# ─── Backend URL (tunnel internal hostname) ───
+[vars]
+BACKEND_URL = "https://1902d137-6f08-4088-b3e6-d6ca8a2cc68f.cfargotunnel.com"
